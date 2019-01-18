@@ -147,6 +147,9 @@ public class BookmarkBridge {
             bookmarkModelChanged();
         }
 
+        public void bookmarkIdsReassigned() {
+        }
+
         /**
          * Invoked when bookmarks became editable or non-editable.
          */
@@ -549,6 +552,22 @@ public class BookmarkBridge {
     }
 
     /**
+     * Set meta info for the given bookmark.
+     */
+    public void SetNodeMetaInfo(BookmarkId id, String key, String value) {
+        assert mIsNativeBookmarkModelLoaded;
+        nativeSetNodeMetaInfo(mNativeBookmarkBridge, id.getId(), id.getType(), key, value);
+    }
+
+    /**
+     * Removes meta info for the given bookmark.
+     */
+    public void DeleteNodeMetaInfo(BookmarkId id, String key) {
+        assert mIsNativeBookmarkModelLoaded;
+        nativeDeleteNodeMetaInfo(mNativeBookmarkBridge, id.getId(), id.getType(), key);
+    }
+
+    /**
      * @return Whether the given bookmark exist in the current bookmark model, e.g., not deleted.
      */
     public boolean doesBookmarkExist(BookmarkId id) {
@@ -741,6 +760,16 @@ public class BookmarkBridge {
         }
     }
 
+    /**/
+    @CalledByNative
+    private void bookmarkIdsReassigned() {
+Log.i("TAG_BookmDb", "[BookmDb] BookmarkBridge.bookmarkIdsReassigned");
+      for (BookmarkModelObserver observer : mObservers) {
+          observer.bookmarkIdsReassigned();
+      }
+    }
+
+
     @CalledByNative
     private void bookmarkModelDeleted() {
         destroy();
@@ -921,6 +950,12 @@ public class BookmarkBridge {
             String title);
     private native void nativeSetBookmarkUrl(long nativeBookmarkBridge, long id, int type,
             String url);
+
+    private native void nativeSetNodeMetaInfo(long nativeBookmarkBridge, long id, int type,
+            String key, String value);
+    private native void nativeDeleteNodeMetaInfo(long nativeBookmarkBridge, long id, int type,
+            String key);
+
     private native boolean nativeDoesBookmarkExist(long nativeBookmarkBridge, long id, int type);
     private native void nativeGetBookmarksForFolder(long nativeBookmarkBridge,
             BookmarkId folderId, BookmarksCallback callback,

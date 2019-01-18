@@ -498,6 +498,30 @@ void BookmarkBridge::SetBookmarkUrl(JNIEnv* env,
       GURL(base::android::ConvertJavaStringToUTF16(env, url)));
 }
 
+void BookmarkBridge::SetNodeMetaInfo(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj,
+                                    jlong id,
+                                    jint type,
+                                    const JavaParamRef<jstring>& key,
+                                    const JavaParamRef<jstring>& value) {
+  DCHECK(IsLoaded());
+  bookmark_model_->SetNodeMetaInfo(
+      GetNodeByID(id, type),
+      base::android::ConvertJavaStringToUTF8(env, key),
+      base::android::ConvertJavaStringToUTF8(env, value));
+}
+
+void BookmarkBridge::DeleteNodeMetaInfo(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj,
+                                    jlong id,
+                                    jint type,
+                                    const JavaParamRef<jstring>& key) {
+  DCHECK(IsLoaded());
+  bookmark_model_->DeleteNodeMetaInfo(
+      GetNodeByID(id, type),
+      base::android::ConvertJavaStringToUTF8(env, key));
+}
+
 bool BookmarkBridge::DoesBookmarkExist(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj,
                                         jlong id,
@@ -883,6 +907,7 @@ bool BookmarkBridge::IsFolderAvailable(
 }
 
 void BookmarkBridge::NotifyIfDoneLoading() {
+LOG(INFO) <<"[BookmDb] " << __func__;
   if (!IsLoaded())
     return;
   JNIEnv* env = AttachCurrentThread();
@@ -890,6 +915,15 @@ void BookmarkBridge::NotifyIfDoneLoading() {
   if (obj.is_null())
     return;
   Java_BookmarkBridge_bookmarkModelLoaded(env, obj);
+}
+
+void BookmarkBridge::NotifyIfIdsReassigned() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_BookmarkBridge_bookmarkIdsReassigned(env, obj);
 }
 
 // ------------- Observer-related methods ------------- //
@@ -909,6 +943,10 @@ void BookmarkBridge::BookmarkModelChanged() {
 
 void BookmarkBridge::BookmarkModelLoaded(BookmarkModel* model,
                                           bool ids_reassigned) {
+LOG(INFO) <<"[BookmDb] " << __func__ << " ids_reassigned="<<ids_reassigned;
+  if (ids_reassigned) {
+    NotifyIfIdsReassigned();
+  }
   NotifyIfDoneLoading();
 }
 

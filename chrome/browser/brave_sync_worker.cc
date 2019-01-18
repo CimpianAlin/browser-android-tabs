@@ -31,6 +31,7 @@ void CreateOpenDatabase() {
     std::lock_guard<std::mutex> guard(*g_pLevel_db_init_mutex);
 
     if (nullptr == g_level_db) {
+        LOG(INFO) <<"[BookmDb] " << __func__ << " Opening leveldb db";
         base::FilePath app_data_path;
         base::PathService::Get(base::DIR_ANDROID_APP_DATA, &app_data_path);
         base::FilePath dbFilePath = app_data_path.Append(DB_FILE_NAME);

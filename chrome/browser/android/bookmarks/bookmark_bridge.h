@@ -128,6 +128,19 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
                       jint type,
                       const base::android::JavaParamRef<jstring>& url);
 
+  void SetNodeMetaInfo(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      jlong id,
+                      jint type,
+                      const base::android::JavaParamRef<jstring>& key,
+                      const base::android::JavaParamRef<jstring>& value);
+
+  void DeleteNodeMetaInfo(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      jlong id,
+                      jint type,
+                      const base::android::JavaParamRef<jstring>& key);
+
   bool DoesBookmarkExist(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          jlong id,
@@ -222,6 +235,7 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   bool IsLoaded() const;
   bool IsFolderAvailable(const bookmarks::BookmarkNode* folder) const;
   void NotifyIfDoneLoading();
+  void NotifyIfIdsReassigned();
 
   // Override bookmarks::BaseBookmarkModelObserver.
   // Called when there are changes to the bookmark model that don't trigger
